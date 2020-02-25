@@ -5,7 +5,20 @@
 		<link rel="stylesheet" type="text/css" href="../stylesheet.css"/>
 	</head>
 	<body>
-		<h1>Hello World</h1>
+		<h1>Hello, <script>
+			let hour = new Date().getHours();
+			var greeting = "Good Day";
+			if(hour < 9)
+				greeting = "Good Morning";
+			else if(hour < 13)
+				greeting = "Good Day";
+			else if(hour < 17)
+				greeting = "Good Afternoon";
+			else if(hour < 24)
+				greeting = "Good Evening";
+			
+			document.write(greeting);
+		</script></h1>
 		<div class="column three-quarters">
 			<h2>About Me</h2>
 			<p>I'm Jack Baker. I live just outside of Boston, MA with my plants and too many ideas. My first language was trying to reverse engineer the BASIC programs that made up my math homework back in 7th grade, which I promptly forgot about until four years later, when I learned Java and enough TI-BASIC to not have to memorize my calculus theorems. I then moved on to learn C# and C++ and found  my happy place (It's C# 6.0 for those counting at home.) I dabbled in a few other languages, but kept finding my way back to C# and C++.</p>
