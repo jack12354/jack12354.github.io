@@ -1,0 +1,42 @@
+* {
+	font-family: monospace;
+}
+
+body {
+	background: #eee;
+	margin: 0px;
+}
+
+h1 {
+	text-align: center
+}
+
+p, li{
+	font-family: monospace;
+	color: green;
+	text-decoration: none;
+}
+
+.column {
+	float: left;
+	margin: 5px;
+}
+.three-quarters {
+	width: calc(75% - 10px);
+}
+.two-quarters {
+	width: calc(50% - 10px);
+}
+.one-quarters {
+	width: calc(25% - 10px);
+}
+
+.container {
+	width:100%;
+	overflow: hidden;
+}
+.right-panel {
+	position: fixed;
+	right: 0;
+	width: 25%;
+}
