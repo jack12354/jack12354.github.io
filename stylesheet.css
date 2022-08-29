@@ -3,6 +3,7 @@
 }
 
 body {
+	color: #111;
 	background: #eee;
 	max-width: 900px;
 	margin: 0px;
@@ -32,12 +33,8 @@ p, li{
 	width: calc(25% - 10px);
 }
 
-.container {
-	width:100%;
+.link-panel {
+	height: 350px;
 	overflow: hidden;
-}
-.right-panel {
-	position: fixed;
-	right: 0;
-	width: 25%;
+	border: none;
 }
