@@ -23,6 +23,9 @@ p, li{
 	float: left;
 	margin: 5px;
 }
+.four-quarters {
+	width: calc(100% - 10px);
+}
 .three-quarters {
 	width: calc(75% - 10px);
 }
