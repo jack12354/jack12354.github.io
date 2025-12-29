@@ -3,8 +3,8 @@
 }
 
 body {
-	color: #111;
-	background: #eee;
+	color: #222;
+	background: #ddd;
 	max-width: 900px;
 	margin: 0px;
 }
@@ -13,10 +13,14 @@ h1 {
 	text-align: center
 }
 
-p, li{
+p, li, pre {
 	font-family: monospace;
 	color: green;
 	text-decoration: none;
+}
+
+ul {
+	padding-inline-start: 3ch;
 }
 
 .column {

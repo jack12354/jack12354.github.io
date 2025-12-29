@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Jack Baker | Developer</title>
+    <link rel="stylesheet" type="text/css" href="../stylesheet.css" />
+</head><h1>Jack Baker | Developer</h1>
+<body><div class="column three-quarters">
+<h2>Modelling Production Workflows with Docker</h2><i>June 16, 2025</i>
+<p><i>adapted from a conversation with <a href="https://thinktwicecodeonce.com/">areyesgfx</a></i></p>
+<p>In order to more easily test, develop, and deploy software, it's generally helpful to have a local, repeatable configuration to enable rapid prototyping and development. The first thing is that this is definitely not something that you can implement in a day or a week, it's definitely an "aspirational architecture", and takes effort from eng, ops, etc to make work, if you're starting with an existing project. There are things that you can do when starting a new project that can help set this up to enable success further on.</p>
+<p>The basic concept is that a developer can run the whole stack (or at least their subsection of it) totally locally. It's sometimes not <i>totally</i> possible (sometimes need to reach out to an auth server or something that's too annoying to mock, but there's ways around that too). The basic setup is based around Docker with some related workflows. The two main components are the base app, and a docker-compose file. </p>
+<p>The docker-compose file has the definitions of all the dependent services of the base app. For most cases, this is the database, messaging service, a metrics acceptor, etc. For things that reach out to AWS services, <a href="https://www.localstack.cloud/">localstack</a> is amazing. It can mock most AWS services, even on the free tier, and behaves exactly like S3/DynamoDB/DocumentDB/SecretsManager, but completely locally. </p>
+<p>In the base app, the most important thing is that all the endpoints are parameterized/configurable, so they can be set to point to the localhost/docker environment instead of the "real" urls. For instance, instead of having the database endpoint be hardcoded, it can be set up to point at the local redis/whatever instance that's running in docker, the same way that there's different "qa" and "prod" configurations with a "local" configuration.</p>
+<p>The workflow for devs looks like this, once all the dependencies are defined in the docker-compose:</p>
+<ul>
+<li> <code>docker compose up</code> starts all the dependency services</li>
+<li> then the developer can start the actual service with the <code>local</code> config, and there's two options here:</li>
+<ul>
+<li> build and run the app itself as a docker container, from a dockerfile, also locally. This way, everything is living inside the docker network and gets the nice internally DNS-mapped names for free from docker (i.e. the database endpoint is literally just <code>http://redis:6379</code>)</li>
+<li> the other way is to run the app outside the docker network so it's super easy to set breakpoints/use the debugger and start up/shut down the app without restarting all the dependencies. the only catch is that all the dependencies in the docker network just get pushed to localhost outside the docker network, so the db endpoint is <code>http://localhost:6379</code></li>
+<li> to handle this without having to create yet another configuration, entries for with each of the dependencies in <code>/etc/hosts</code> mapping the dependency name to <code>localhost</code></li>
+<li> now, development can cycle through a lot quicker without having to deal with individual developer experiments clogging up the qa db/services, since it's all running locally</li>
+</ul>
+<li> at the end of the day or feature, you can run <code>docker compose down</code> and shut down all the dependencies and clean things up</li>
+</ul>
+<p>This way there's a lot of benefits, namely that you can do literally whatever you want to the database then just blow it away and try again if it didn't work. Usually people's local DBs are self-populated with dummy data, so you shouldn't be pulling full copies of prod to people's computers (also that's a massive liability issue since there's tons of PII and GDPR stuff that shouldn't be able to be distributed to random people's computers.) Of the two options, the "run on host, dependencies in containers" is (as a developer) far preferred. Everything getting put to localhost is a minor hiccup, but the ability to run the app natively and actually hook up a debugger is massively more beneficial for productivity instead of being limited to println debugging.</p>
+<p>To deploy with this setup, there are also a few ways to handle this, but the way I've found to be most straightforward is as follows (this is based off ECS/EC2 architecture, but Kubernetes architecture works conceptually the same):</p>
+<ul>
+<li> each team is responsible for writing a script or dockerfile that builds a container image, and pushes it to, typically, AWS ECR or Artifactory under a tag like <code>qa</code> or <code>latest</code> or some semantically versioned (i.e. <code>v2.3.1</code>) tag</li>
+<li> this next step is run by one of the following: the ops team or by the individual dev team, or automatically after tests pass on a merge to <code>main</code> branch: when it's time to run a qa deployment there's a script that updates the ECS/EC2 cluster definition/load balancer group with the newly built <code>qa</code> tagged image and then forces a redeployment to the cluster. </li>
+<li> To ensure that the image deployed to each environment is the one deployed to the previous one, the deployment script should use the same base image, then, before deployment, copy in the appropriate configuration file, or, have all deployable environment configurations packaged with the release image, and a simple environment variable can inform the app which file to read from. </li>
+<li> The traffic changeover can either be allowed to occur naturally if the general nature of each connection is short-lived (or even better, stateless), but if not, can include either the automatic lifecycle management of your deployment target, or a script to iterate through the existing instances and sending a shutdown signal to migrate traffic to the newly deployed instances. Once all the traffic has been migrated, the old instances can be destructed and shut down.</li>
+<li> When it's time for a production deploy, the current <code>prod</code> tag is updated to point at the <code>qa</code> tag, and again the redeploy/cutover/pod rolling deployment is run</li>
+</div>
+<iframe class="column one-quarters link-panel" src="/links/panel.html"></iframe>
+</body>
+
+</html>
